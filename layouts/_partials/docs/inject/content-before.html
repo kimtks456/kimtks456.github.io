@@ -5,20 +5,21 @@
 {{ if and .IsPage (not .Params.bookHideMeta) }}
   {{ $hasDate := and .Date (not .Date.IsZero) }}
   {{ $hasMod  := and .Lastmod (not .Lastmod.IsZero) }}
-  {{ $sameDay := and $hasDate $hasMod (eq (.Date.Format "2006-01-02") (.Lastmod.Format "2006-01-02")) }}
 
   {{ if or $hasDate $hasMod }}
     <div class="book-page-meta">
       {{ if $hasDate }}
         <span class="book-page-meta-item">
           <span class="label">작성일</span>
-          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{
+          .Date.Format "2006-01-02" }}</time>
         </span>
       {{ end }}
-      {{ if and $hasMod (not $sameDay) }}
+      {{ if $hasMod }}
         <span class="book-page-meta-item">
-          <span class="label">최종 수정</span>
-          <time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod.Format "2006.01.02" }}</time>
+          <span class="label">최종 수정일시</span>
+          <time datetime="{{ .Lastmod.Format "2006-01-02T15:04:05-07:00"
+          }}">{{ .Lastmod.Format "2006-01-02 / 15:04" }}</time>
         </span>
       {{ end }}
     </div>

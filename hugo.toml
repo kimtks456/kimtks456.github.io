@@ -3,9 +3,12 @@ languageCode = 'ko-kr'
 title = 'San Kim의 위키' # 원하는 이름으로 변경
 theme = 'hugo-book'
 
+# 모든 .Date / .Lastmod 를 KST로 해석·출력
+timeZone = 'Asia/Seoul'
+
 # git repo에 첫 commit이 생긴 뒤 enableGitInfo = true 를 켜면
 # .Lastmod 가 git 마지막 commit 시점으로 자동 설정됩니다.
-# enableGitInfo = true
+enableGitInfo = true
 
 # .Date / .Lastmod 결정 우선순위
 #  - date:    front matter의 date가 없으면 파일 수정시간으로 fallback
