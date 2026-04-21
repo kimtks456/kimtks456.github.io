@@ -1,0 +1,12 @@
+# Hugo build artifacts (GitHub Actions가 빌드하므로 커밋 불필요)
+/public/
+/resources/_gen/
+.hugo_build.lock
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
