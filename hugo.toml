@@ -1,0 +1,24 @@
+baseURL = 'https://kimtks456.github.io/'
+languageCode = 'ko-kr'
+title = 'San Kim의 위키' # 원하는 이름으로 변경
+theme = 'hugo-book'
+
+# git repo에 첫 commit이 생긴 뒤 enableGitInfo = true 를 켜면
+# .Lastmod 가 git 마지막 commit 시점으로 자동 설정됩니다.
+# enableGitInfo = true
+
+# .Date / .Lastmod 결정 우선순위
+#  - date:    front matter의 date가 없으면 파일 수정시간으로 fallback
+#  - lastmod: front matter > (git) > 파일 수정시간 > date
+[frontmatter]
+  date = ["date", ":fileModTime"]
+  lastmod = ["lastmod", ":git", ":fileModTime", "date"]
+
+# 휴고북 기본 세팅
+[params]
+  BookLogo = '' # 로고 이미지 경로 (없으면 비워둠)
+  BookTheme = 'auto' # 다크모드 자동
+
+# 모든 하위 페이지에 bookCollapseSection 주입 (leaf page는 layouts override에서 차단)
+[[cascade]]
+  bookCollapseSection = true

@@ -1,0 +1,26 @@
+{{/*
+  leaf page에만 작성일 / 최종 수정일을 표시.
+  front matter에 bookHideMeta: true 를 두면 해당 페이지에서 숨김.
+*/}}
+{{ if and .IsPage (not .Params.bookHideMeta) }}
+  {{ $hasDate := and .Date (not .Date.IsZero) }}
+  {{ $hasMod  := and .Lastmod (not .Lastmod.IsZero) }}
+  {{ $sameDay := and $hasDate $hasMod (eq (.Date.Format "2006-01-02") (.Lastmod.Format "2006-01-02")) }}
+
+  {{ if or $hasDate $hasMod }}
+    <div class="book-page-meta">
+      {{ if $hasDate }}
+        <span class="book-page-meta-item">
+          <span class="label">작성일</span>
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>
+        </span>
+      {{ end }}
+      {{ if and $hasMod (not $sameDay) }}
+        <span class="book-page-meta-item">
+          <span class="label">최종 수정</span>
+          <time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod.Format "2006.01.02" }}</time>
+        </span>
+      {{ end }}
+    </div>
+  {{ end }}
+{{ end }}

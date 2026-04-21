@@ -1,0 +1,118 @@
+/* assets/_custom.scss */
+/* Claude / Claude Code UI 스타일 — 따뜻한 상아색 + 코럴 오렌지 악센트 */
+
+:root {
+  /* 본문 배경 - 클로드 상아색 */
+  --body-background: #F9F8F6 !important;
+  --body-font-color: #2B2B28 !important;
+
+  /* 코드블록 · 인용문 · 검색창 · hint 배경 (메뉴와 동일한 살짝 진한 크림) */
+  --gray-100: #F3F1ED !important;
+
+  /* 테두리 - 은은한 웜 그레이 */
+  --gray-200: #E5E1D8 !important;
+
+  /* 스크롤바 · 리스트 마커 */
+  --gray-500: #A89F91 !important;
+
+  /* 링크 - 클로드 코럴 오렌지 */
+  --color-link: #C15F3C !important;
+  --color-visited-link: #8B4A30 !important;
+
+  /* hint/callout 팔레트도 따뜻한 톤으로 통일 */
+  --color-accent-default: #8B7355 !important;
+  --color-accent-note: #C15F3C !important;
+  --color-accent-tip: #6B8E5A !important;
+  --color-accent-important: #9B6B8E !important;
+  --color-accent-warning: #D9963C !important;
+  --color-accent-caution: #B55441 !important;
+
+  --border-radius: 0.375rem !important;
+
+  /* 다크모드에서도 light 상아색을 유지하므로 아이콘이 흰색으로 뒤집히지 않도록 고정 */
+  --icon-filter: none !important;
+}
+
+/* 메뉴 · 목차 사이드바를 본문보다 살짝 진한 크림으로 */
+.book-menu .book-menu-content,
+.book-toc .book-toc-content {
+  background: #F3F1ED !important;
+}
+
+/* 한글 친화 + 시스템 폰트 스택 */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Pretendard",
+    "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI",
+    "Helvetica Neue", sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* 인라인 코드는 코럴 톤으로 (Claude Code의 그 느낌) */
+code {
+  color: #8B4A30;
+}
+pre code {
+  color: inherit;
+}
+
+/* 인용문 좌측 바도 코럴 오렌지 */
+blockquote {
+  border-inline-start-color: #C15F3C !important;
+}
+
+/* 활성 메뉴 항목 강조 */
+.book-menu a.active {
+  font-weight: 700;
+}
+
+/* 사이드바 카테고리(메뉴 항목 전체)를 bold로 */
+.book-menu a,
+.book-menu label {
+  font-weight: 600;
+}
+
+/* 브랜드 타이틀 "San Kim의 위키"도 bold로 */
+.book-brand,
+.book-brand a {
+  font-weight: 700;
+}
+
+/* 페이지 상단 작성일 / 최종 수정일 메타 블록 */
+.book-page-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+
+  font-size: var(--font-size-smallest);
+  color: #8B7355;
+
+  margin: 0 0 1.5rem 0;
+  padding: 0.5rem 0 0.75rem 0;
+  border-bottom: 1px solid var(--gray-200);
+
+  .book-page-meta-item {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .label {
+    font-weight: 600;
+    color: #A89F91;
+  }
+
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* 본문 heading 폰트를 약 2px씩 낮춤 */
+.markdown {
+  h1 { font-size: 1.75rem; }   /* 32 → 28 */
+  h2 { font-size: 1.375rem; }  /* 24 → 22 */
+  h3 { font-size: 1.125rem; }  /* 20 → 18 */
+  h4 { font-size: 1rem; }      /* 18 → 16 */
+  h5 { font-size: 0.9375rem; } /* 16 → 15 */
+  h6 { font-size: 0.8125rem; } /* 14 → 13 */
+}
