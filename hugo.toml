@@ -25,3 +25,12 @@ enableGitInfo = true
 # 모든 하위 페이지에 bookCollapseSection 주입 (leaf page는 layouts override에서 차단)
 [[cascade]]
   bookCollapseSection = true
+
+# ToC 에 포함할 heading 깊이
+#   startLevel = 1  →  #  (h1) 부터 포함
+#   endLevel   = 4  →  #### (h4) 까지 포함. 더 깊이 원하면 5 또는 6.
+#[markup]
+#  [markup.tableOfContents]
+#    startLevel = 1
+#    endLevel = 4
+#    ordered = false
