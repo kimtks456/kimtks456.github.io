@@ -77,6 +77,31 @@ blockquote {
   font-weight: 700;
 }
 
+/* 본문 표 헤더 강조 (크림 배경 + 코럴 하단 보더) */
+.markdown table {
+  thead {
+    background: #EFECE5;
+
+    th {
+      font-weight: 700;
+      color: var(--body-font-color);
+      border-bottom: 2px solid #C15F3C;
+    }
+  }
+
+  /* 짝수 행에 살짝 톤 차이 (가독성) */
+  tbody tr:nth-child(even) {
+    background: #FBFAF7;
+  }
+
+  /* 첫 컬럼(라벨)은 최소 너비 + 줄바꿈 방지로 한 줄 유지 */
+  th:first-child,
+  td:first-child {
+    //min-width: 9rem;
+    white-space: nowrap;
+  }
+}
+
 /* 페이지 상단 작성일 / 최종 수정일 메타 블록 */
 .book-page-meta {
   display: flex;
