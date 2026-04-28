@@ -79,6 +79,9 @@ blockquote {
 
 /* 본문 표 헤더 강조 (크림 배경 + 코럴 하단 보더) */
 .markdown table {
+  /* 표 내부 폰트는 본문보다 약 2px 작게 (16px → 14px) */
+  font-size: 13px;
+
   thead {
     background: #EFECE5;
 
@@ -97,8 +100,8 @@ blockquote {
   /* 첫 컬럼(라벨)은 최소 너비 + 줄바꿈 방지로 한 줄 유지 */
   th:first-child,
   td:first-child {
-    //min-width: 9rem;
-    white-space: nowrap;
+    min-width: 6rem;
+    // white-space: nowrap;
   }
 }
 
