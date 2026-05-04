@@ -21,6 +21,9 @@ enableGitInfo = true
 [params]
   BookLogo = '' # 로고 이미지 경로 (없으면 비워둠)
   BookTheme = 'auto' # 다크모드 자동
+  # `[text](./foo.md)` 형식의 상대 .md 링크를 실제 페이지 URL 로 자동 변환.
+  # "warning" 으로 두면 깨진 링크가 빌드 로그에 경고로 뜸. true / "error" 도 가능.
+  BookPortableLinks = "warning"
 
 # 모든 하위 페이지에 bookCollapseSection 주입 (leaf page는 layouts override에서 차단)
 [[cascade]]

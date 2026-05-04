@@ -122,7 +122,7 @@ date: 2026-04-29
 
 ### 4.3. 토픽/공통 라이브러리 영향
 
-- §1 의 [`kafka-platform`](./1_platform_design.md) 리포에서 사용하는 도구별 4.0 지원 시점 확인 필요:
+- [`kafka-platform`](../platform/2_git_repository.md) 리포에서 사용하는 도구별 4.0 지원 시점 확인 필요:
   - **Strimzi**: 버전별 지원 Kafka 매트릭스 — [strimzi-kafka-operator/kafka-versions.yaml](https://github.com/strimzi/strimzi-kafka-operator/blob/main/kafka-versions.yaml)
   - **Confluent for Kubernetes (CfK)**: Confluent Platform 8.x 라인 (4.0 기반)이 정렬되는지 — *(미확인)*
   - **JulieOps / kafka-gitops / Terraform Provider**: 4.0 클러스터 대상 호환성 점검 — *(미확인)*

@@ -1,6 +1,6 @@
 ---
-title: "3. Kafka Connect — 모니터링"
-weight: 3
+title: "2. 모니터링"
+weight: 2
 date: 2026-05-02
 ---
 
@@ -9,8 +9,8 @@ date: 2026-05-02
 > 출처: [Confluent — Kafka Connect Monitoring (JMX)](https://docs.confluent.io/platform/current/connect/monitoring.html)
 >
 > 관련 문서:
-> - 개념·아키텍처·HA·자원: [2. Kafka Connect](./2_connect.md)
-> - DB sink 시나리오의 모니터링 보완(예: DB connection pool): [4. Connect — DB Sink 시나리오 Q&A](./4_connect_db_sink.md)
+> - 개념·아키텍처·HA·자원: [1. Connect 개념](./1_concept.md)
+> - DB sink 시나리오의 모니터링 보완(예: DB connection pool): [3. DB Sink 시나리오 Q&A](./3_db_sink_qna.md)
 
 ---
 
@@ -93,7 +93,7 @@ JMX 의 `sink-record-active-count` 도 비슷한 신호를 주지만, **Lag 은 
 Connect 가 보여주는 것은 *"외부 시스템에 batch 한 번 쓰는 데 N 초 걸렸다"* 까지. 그 N 초의 *내부 분해* 는 외부 시스템 측 도구로 봐야 한다.
 
 → 외부 시스템 자체 exporter 와 함께 운영. sink 별 구체 가이드는 해당 시스템 docs 참조:
-- DB sink 의 connection 풀 모니터링: [4. Connect — DB Sink 시나리오 Q&A](./4_connect_db_sink.md) §5
+- DB sink 의 connection 풀 모니터링: [3. DB Sink 시나리오 Q&A](./3_db_sink_qna.md) §5
 - Elasticsearch sink: cluster stats / hot threads — *(미정, 도입 시 정리)*
 - S3 sink: S3 access log / multipart upload 실패율 — *(미정)*
 

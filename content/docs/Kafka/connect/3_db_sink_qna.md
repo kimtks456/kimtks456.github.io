@@ -1,11 +1,11 @@
 ---
-title: "4. Kafka Connect — DB Sink 시나리오 Q&A"
-weight: 4
+title: "3. DB Sink 시나리오 Q&A"
+weight: 3
 date: 2026-05-02
 ---
 
 > 본 문서는 sink = **관계형 DB** 라는 구체 시나리오에서 Connect 도입 시 떠올린 의문과 그 답을 정리한다.
-> Connect 의 일반 개념은 [2. Kafka Connect](./2_connect.md), 모니터링 일반론은 [3. Connect — 모니터링](./3_connect_monitoring.md).
+> Connect 의 일반 개념은 [1. Connect 개념](./1_concept.md), 모니터링 일반론은 [2. 모니터링](./2_monitoring.md).
 > 본 문서는 *DB 적재* 라는 케이스에 한정해 — connection 산정, schema 변환, batch insert, DB 측 모니터링, "그냥 직접 짜면 안 되나?" 같은 의문을 다룬다.
 
 ---
@@ -44,7 +44,7 @@ date: 2026-05-02
 | 의문 (Q) | 왜 이런 의문이 나오나 | 답 (A) | 자세히 |
 |---|---|---|---|
 | Connect 는 매 레코드마다 DB connection 을 새로 여나? | "자동" 이라 비효율적일 거란 직관적 우려 | **아니다.** task 당 단일 JDBC connection 을 유지·재사용 | §5 |
-| DB schema 에 맞춰 필드 매핑·타입 변환을 Connect 로 할 수 있나? | 직접 consumer 에서는 자바 코드로 자유롭게 했음 | **단순 변환은 SMT(Single Message Transforms) 로 가능** — 필드 rename, cast, mask, filter, route 등 | [Confluent SMT](https://docs.confluent.io/platform/current/connect/transforms/overview.html), [2. Kafka Connect §1.5](./2_connect.md) |
+| DB schema 에 맞춰 필드 매핑·타입 변환을 Connect 로 할 수 있나? | 직접 consumer 에서는 자바 코드로 자유롭게 했음 | **단순 변환은 SMT(Single Message Transforms) 로 가능** — 필드 rename, cast, mask, filter, route 등 | [Confluent SMT](https://docs.confluent.io/platform/current/connect/transforms/overview.html), [1. Connect 개념 §1.5](./1_concept.md) |
 | Batch insert 를 Connect 가 알아서 해주나? | "모아서 한 번에 INSERT" 는 직접 짠 consumer 의 핵심 최적화였음 | **JDBC Sink Connector 가 자체 지원.** `batch.size` 디폴트 3000 | [JDBC Sink config](https://docs.confluent.io/kafka-connectors/jdbc/current/sink-connector/sink_config_options.html) |
 | 변환이 복잡하면(여러 메시지 join, 외부 lookup, 집계) Connect 만으로 안 되지 않나? | SMT 가 단일 레코드 변환만 다룸 | **그렇다.** 그 경우엔 Kafka Streams 로 사전 변환 토픽 만들거나, 별도 도메인 서비스(`log-ingestion-service`) 로 분리 | §4.4 |
 
@@ -185,7 +185,7 @@ date: 2026-05-02
 | commit/sec | 평소 대비 ×2 | INSERT 속도 비정상 (피크 또는 retry 폭주) |
 | deadlock 발생 | > 0 | 동시 INSERT 가 같은 행을 침범. partition 키 또는 batch 전략 점검 |
 
-→ *Connect 측 알람 + DB 측 알람을 함께 봐야* 원인이 분리됨. (자세히는 [3. Connect — 모니터링 §5](./3_connect_monitoring.md))
+→ *Connect 측 알람 + DB 측 알람을 함께 봐야* 원인이 분리됨. (자세히는 [2. 모니터링 §5](./2_monitoring.md))
 
 ---
 
@@ -219,6 +219,6 @@ date: 2026-05-02
 - [confluentinc/kafka-connect-jdbc (GitHub)](https://github.com/confluentinc/kafka-connect-jdbc) — connection 관리·batch 동작의 정확한 코드 확인용
 
 ### 본 사이트 내 관련 문서
-- [2. Kafka Connect](./2_connect.md) — Connect 일반 개념·HA·자원
-- [3. Connect — 모니터링](./3_connect_monitoring.md) — JMX·Lag·표준 스택
-- [실습/1. GitOps 기반 Kafka 플랫폼 설계](../../practice/1_platform_design.md) — Connector YAML 위치 (`kafka-platform/connectors/`)
+- [1. Connect 개념](./1_concept.md) — Connect 일반 개념·HA·자원
+- [2. 모니터링](./2_monitoring.md) — JMX·Lag·표준 스택
+- [공통 플랫폼 설계/2. Git Repository 설계](../platform/2_git_repository.md) — Connector YAML 위치 (`kafka-platform/connectors/`)

@@ -1,4 +1,4 @@
 ---
 title: "실습"
-weight: 2
+weight: 4
 ---
