@@ -25,49 +25,82 @@ cd kafka-platform
 ```bash
 mkdir -p brokers
 mkdir -p topics/order topics/log
+mkdir -p scripts
 mkdir -p connectors/db-sink
 mkdir -p test
-touch README.md .gitignore
+touch .gitignore
 touch brokers/server.properties
-touch test/docker-compose.yml
+touch scripts/create-topics.sh
+touch test/docker-compose.yml test/.env.dev test/.env.qa
 ```
 
 ### 1.3. `.gitignore`
 
 ```
+# OS
 .DS_Store
 *.swp
+
+# Secrets (.env.dev / .env.qa 는 커밋 대상)
+.env
+.env.prd
 ```
 
-### 1.4. `test/docker-compose.yml`
+### 1.4. `test/docker-compose.yml` 실행
 
-[5. 설계 §3](./5_design.md) 의 docker-compose 내용 그대로 (Kafka + Kafka UI + Nexus).
-
-로컬 실행:
+환경별로 `.env.dev` / `.env.qa` 파일을 `--env-file` 로 지정한다.
 
 ```bash
 cd test
-docker compose up -d
+
+# 로컬 개발
+docker compose --env-file .env.dev up -d
 
 # Kafka 준비 확인
-docker compose logs kafka | grep "Kafka Server started"
+docker compose logs -f init-kafka
 ```
 
 접근 포인트:
 
-| 서비스 | URL |
-|---|---|
-| Kafka UI | `http://localhost:8989` |
-| Nexus | `http://localhost:8081` |
+| 서비스 | URL | 비고 |
+|--------|-----|------|
+| Kafka UI | `http://localhost:8989` | 토픽·메시지 확인 |
+| Nexus | `http://localhost:8081` | 라이브러리 저장소 |
+| Redis | `localhost:6379` | 멱등성 store |
 
-### 1.5. 첫 커밋
+### 1.5. 토픽 자동 생성 스크립트 (`scripts/create-topics.sh`)
+
+`topics/` 하위 YAML 파일을 루프하며 토픽을 생성한다. docker-compose의 `init-kafka` 서비스가 Kafka healthcheck 통과 후 이 스크립트를 실행한다.
+
+```bash
+#!/bin/bash
+for f in $(find /topics -name "*.yaml" | sort); do
+  name=$(grep '^name:'             "$f" | awk '{print $2}')
+  partitions=$(grep '^partitions:' "$f" | awk '{print $2}')
+  replication=$(grep '^replication-factor:' "$f" | awk '{print $2}')
+  retention=$(grep 'retention.ms:' "$f" | awk '{print $2}' | tr -d '"')
+  cleanup=$(grep 'cleanup.policy:' "$f" | awk '{print $2}')
+
+  /opt/kafka/bin/kafka-topics.sh --bootstrap-server "$BOOTSTRAP" \
+    --create --if-not-exists \
+    --topic "$name" --partitions "$partitions" --replication-factor "$replication" \
+    --config "retention.ms=${retention}" --config "cleanup.policy=${cleanup}"
+done
+```
+
+토픽 추가 시 YAML 파일만 추가하면 된다. `docker-compose.yml` 수정 불필요.
+
+> `--if-not-exists`: 재시작 시 이미 존재하는 토픽은 skip — 충돌 없음.
+> config 변경(retention 등)은 재시작으로 반영 안 됨 → `kafka-configs.sh --alter` 사용.
+
+### 1.6. 첫 커밋
 
 ```bash
 git add .
 git commit -m "chore: kafka-platform 초기 구조 세팅"
 ```
 
-### 1.6. Nexus 초기 설정
+### 1.7. Nexus 초기 설정
 
 > 컨테이너 첫 기동 시 1~2분 초기화 시간 필요. 로그에 `Started Sonatype Nexus` 확인 후 진행.
 
@@ -311,6 +344,42 @@ SNAPSHOT 최신본 강제 수신:
 ```
 
 > `maven-public` 은 group 레포 — releases + snapshots + Maven Central 을 하나로 묶음. 여기 하나만 바라보면 된다.
+
+### 2.8. order-service — dev/qa/prd 환경 분리
+
+Spring 프로파일 기반으로 환경을 분리한다.
+
+| 파일 | 커밋 여부 | 용도 |
+|------|-----------|------|
+| `application.yaml` | ✓ | 공통 설정 (serializer, port 등) |
+| `application-dev.yaml` | ✓ | 로컬 개발 (localhost 호스트명) |
+| `application-qa.yaml` | ✓ | QA 환경 (QA 클러스터 주소, 시크릿은 `${VAR}`) |
+| `application-prd.yaml` | ✗ gitignore | 운영 환경 (모든 값 env 주입) |
+
+```yaml
+# application-dev.yaml
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+  datasource:
+    url: jdbc:postgresql://localhost:5432/orderdb
+    username: postgres
+    password: postgres
+  data:
+    redis:
+      host: localhost
+      port: 6379
+```
+
+실행 시 프로파일 지정:
+
+```bash
+# 로컬 개발
+SPRING_PROFILES_ACTIVE=dev ./gradlew :order-service:bootRun
+
+# 운영 (K8s 등에서 env 주입)
+SPRING_PROFILES_ACTIVE=prd java -jar order-service.jar
+```
 
 ---
 

@@ -53,25 +53,29 @@ date: 2026-05-09
 
 ```text
 kafka-platform/
-├── README.md                            # 컨벤션·온콜 연락처
-│
 ├── brokers/
 │   └── server.properties                # 브로커 공통 설정 참고본 (Hard 설정 주석 포함)
 │
-├── topics/                              # 토픽 선언 YAML
+├── topics/                              # 토픽 선언 YAML — 토픽 추가 시 이 파일만 추가
 │   ├── order/
 │   │   ├── order.created.v1.yaml
 │   │   └── order.cancelled.v1.yaml
 │   └── log/
 │       └── system.log.v1.yaml           # Connect DB sink 대상 로그 토픽
 │
+├── scripts/
+│   └── create-topics.sh                 # topics/ YAML을 읽어 토픽 자동 생성
+│
 ├── connectors/
 │   └── db-sink/
 │       ├── system-log-sink.json         # JDBC Sink Connector 설정
-│       └── README.md                    # DDL 분리 이유, table 자동생성 금지 이유
+│       ├── system_log.ddl.sql           # 테이블 DDL
+│       └── README.md                    # bulk insert 동작 원리, 환경변수 설명
 │
 └── test/
-    └── docker-compose.yml               # 로컬 개발용 (Kafka + Kafka UI + Nexus)
+    ├── docker-compose.yml               # 로컬 개발용 (Kafka + Kafka UI + Redis + Nexus)
+    ├── .env.dev                         # 로컬 개발 환경변수 (커밋)
+    └── .env.qa                          # QA 환경변수 (커밋, 시크릿 제외)
 ```
 
 ### 토픽 선언 예시 (`order.created.v1.yaml`)
@@ -86,63 +90,43 @@ configs:
   cleanup.policy: delete
 ```
 
-### `test/docker-compose.yml`
+### `test/docker-compose.yml` — 로컬 개발 환경
 
-```yaml
-version: '3.8'
-services:
-  kafka:
-    image: apache/kafka:latest   # KRaft 모드 — ZooKeeper 별도 불필요
-    container_name: kafka
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1           # 로컬 단일 브로커용
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+환경별로 다른 값(`KAFKA_HOST` 등)은 `.env.dev` / `.env.qa` 파일로 분리, `--env-file` 로 주입한다.
 
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    ports:
-      - "8989:8080"
-    environment:
-      DYNAMIC_CONFIG_ENABLED: "true"
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-    depends_on:
-      - kafka
-
-  nexus:
-    image: sonatype/nexus3:latest
-    container_name: nexus
-    ports:
-      - "8081:8081"
-    volumes:
-      - nexus-data:/nexus-data
-
-volumes:
-  nexus-data:
+```bash
+# 로컬 개발
+docker compose --env-file .env.dev up -d
 ```
 
-> - Kafka: `REPLICATION_FACTOR=1`, `MIN_ISR=1` — 로컬 전용. 운영 설정과 다름.
-> - Kafka UI: `http://localhost:8989`
-> - Nexus: `http://localhost:8081` — 초기 설정은 [6. 초기세팅 §1.6](./6_init.md) 참조.
+구성 서비스:
+
+| 서비스 | 포트 | 비고 |
+|--------|------|------|
+| Kafka (KRaft) | 9092 | ZooKeeper 불필요 |
+| Kafka UI | 8989 | `http://localhost:8989` |
+| Redis | 6379 | 멱등성 store |
+| Nexus | 8081 | `http://localhost:8081` |
+
+토픽은 `KAFKA_AUTO_CREATE_TOPICS_ENABLE=false` 로 자동 생성 비활성화.  
+대신 `init-kafka` 컨테이너가 Kafka healthcheck 통과 후 `scripts/create-topics.sh` 를 실행해 `topics/` YAML 을 읽어 생성한다.
+
+```
+Kafka healthy → init-kafka → create-topics.sh → topics/*.yaml 루프 → kafka-topics.sh --create --if-not-exists
+```
+
+`--if-not-exists` 로 재시작 시 충돌 없음. 단 **config 변경(retention 등)은 자동 반영 안 됨** — `kafka-configs.sh --alter` 또는 `down -v` 후 재기동 필요.
 
 ### JDBC Sink Connector 설정 (`system-log-sink.json`)
+
+**1초 OR 10개** 단위로 묶어 단일 bulk INSERT 로 flush 한다.
 
 ```json
 {
   "name": "system-log-sink",
   "config": {
     "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-    "tasks.max": "2",
+    "tasks.max": "1",
     "topics": "prd.log.system.v1",
     "connection.url": "${env:DB_URL}",
     "connection.user": "${env:DB_USER}",
@@ -150,15 +134,33 @@ volumes:
     "insert.mode": "insert",
     "auto.create": "false",
     "auto.evolve": "false",
-    "table.name.format": "kafka_system_log",
+    "table.name.format": "system_log",
     "pk.mode": "none",
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-    "value.converter.schemas.enable": "false"
+    "value.converter.schemas.enable": "false",
+    "batch.size": "10",
+    "consumer.override.max.poll.records": "10",
+    "consumer.override.fetch.min.bytes": "1024",
+    "consumer.override.fetch.max.wait.ms": "1000",
+    "transforms": "rename,drop",
+    "transforms.rename.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.rename.renames": "eventId:event_id,aggregateId:aggregate_id,serviceId:service_id,occurredAt:occurred_at",
+    "transforms.drop.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.drop.exclude": "context"
   }
 }
 ```
 
-> `auto.create=false` — DDL 은 별도 관리. Connect 가 테이블을 자동 생성하지 않음.
+| 설정 | 값 | 역할 |
+|------|----|------|
+| `batch.size` | 10 | INSERT 1문장에 묶을 행 수. 없으면 10번 개별 실행 |
+| `consumer.override.max.poll.records` | 10 | poll() 1회 최대 레코드 수 |
+| `consumer.override.fetch.min.bytes` | 1024 | 브로커가 응답 전 최소 버퍼 (≈10개 분량) |
+| `consumer.override.fetch.max.wait.ms` | 1000 | fetch.min.bytes 미충족 시 최대 대기 ms |
+| `transforms` | rename, drop | camelCase→snake_case 리네임, Map 타입 context 필드 제거 |
+
+> `auto.create=false` — DDL(`system_log.ddl.sql`)은 별도 관리. Connect가 테이블을 자동 생성하지 않음.  
+> 상세 동작 원리는 [Kafka Connect — DB Sink Q&A](../connect/3_db_sink_qna.md) 참조.
 > → JDBC Sink Connector 상세 동작은 [Kafka Connect — DB Sink Q&A](../connect/3_db_sink_qna.md) 참조.
 
 ---
