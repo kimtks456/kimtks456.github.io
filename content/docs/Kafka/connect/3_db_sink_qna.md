@@ -221,4 +221,4 @@ date: 2026-05-02
 ### 본 사이트 내 관련 문서
 - [1. Connect 개념](./1_concept.md) — Connect 일반 개념·HA·자원
 - [2. 모니터링](./2_monitoring.md) — JMX·Lag·표준 스택
-- [공통 플랫폼 설계/2. Git Repository 설계](../platform/2_git_repository.md) — Connector YAML 위치 (`kafka-platform/connectors/`)
+- [실습/5. 설계](../practice/5_design.md) — Connector YAML 위치 (`kafka-platform/connectors/`)

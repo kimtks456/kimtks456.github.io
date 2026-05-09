@@ -164,4 +164,4 @@ CI 에서 `kubectl apply` 만 잘 돌려도 배포 자체는 된다. ArgoCD 를 
 - [gitops.tech — What is GitOps?](https://www.gitops.tech/)
 
 ### 본 사이트 내 관련 문서
-- [Kafka/공통 플랫폼 설계/1. 방향성](../../Kafka/platform/1_direction.md) — GitOps 원칙을 Kafka 도입 시 어떻게 적용할지 (ArgoCD 가 그 실현 도구 중 하나)
+- [Kafka/실습/2. GitOps 기반 설계](../../Kafka/practice/2_gitops_design.md) — GitOps 원칙을 Kafka 도입 시 어떻게 적용할지 (ArgoCD 가 그 실현 도구 중 하나)

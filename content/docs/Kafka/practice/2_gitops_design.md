@@ -1,17 +1,17 @@
 ---
-title: "1. 방향성 (GitOps, Pull 모델)"
-weight: 1
+title: "2. GitOps 기반 설계"
+weight: 2
 date: 2026-05-04
 ---
 
-> 본 문서는 Kafka 공통 플랫폼의 **방향성** — 즉, *어떤 운영 모델로 갈 것인가* 를 정한다.
+> 본 문서는 Kafka 공통 플랫폼의 **GitOps 기반 운영 방향성** — 즉, *어떤 운영 모델로 갈 것인가* 를 정한다.
 > GitOps + Pull 모델 채택의 근거를 1차 출처(gitops.tech, Confluent 블로그/docs) 인용으로 정리하고,
 > 기존 push 기반 CI/CD 와의 차이를 비교한다.
 >
 > 관련 문서:
-> - [2. Git Repository 설계](./2_git_repository.md)
 > - [3. Topic 설계](./3_topic_design.md)
 > - [4. Message Format 설계](./4_message_format.md)
+> - [5. 설계](./5_design.md)
 
 ---
 

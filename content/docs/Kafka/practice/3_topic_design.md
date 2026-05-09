@@ -7,7 +7,7 @@ date: 2026-05-04
 > 본 문서는 토픽 **네이밍 컨벤션** 을 정한다.
 > 출처: [Confluent — *Kafka Topic Naming Convention: Best Practices, Patterns, and Guidelines*](https://www.confluent.io/learn/kafka-topic-naming-convention/)
 >
-> 관련 문서: [2. Git Repository 설계](./2_git_repository.md) — 토픽 YAML 의 위치 (`kafka-platform/topics/`).
+> 관련 문서: [5. 설계](./5_design.md) — 토픽 YAML 의 위치 (`kafka-platform/topics/`).
 
 ---
 
