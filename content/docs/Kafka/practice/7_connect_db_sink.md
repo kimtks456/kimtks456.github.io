@@ -1,12 +1,12 @@
 ---
-title: "4. system-log-sink 구현 상세"
-weight: 4
+title: "7. Connect를 통한 DB 적재"
+weight: 7
 date: 2026-05-10
 ---
 
-> `prd.log.system.v1` 토픽의 시스템 로그를 PostgreSQL에 적재하는 JDBC Sink Connector 구현.  
-> 별도 Consumer 서비스 없이 Connect만으로 처리하는 구체적인 설정과 동작 원리를 다룬다.  
-> 개념 일반론은 [1. Connect 개념](./1_concept.md), Q&A는 [3. DB Sink 시나리오](./3_db_sink_qna.md).
+> `prd.log.system.v1` 토픽의 시스템 로그를 Kafka Connect JDBC Sink로 PostgreSQL에 적재하는 실습.  
+> 별도 Consumer 서비스 없이 Connect만으로 처리하는 설정과 동작을 단계별로 구성한다.  
+> 개념 일반론은 [Connect 개념](../connect/1_concept.md), Q&A는 [DB Sink 시나리오](../connect/3_db_sink_qna.md), 라이선스 이슈는 [Connect 라이선스](../connect/4_license.md).
 
 ---
 
@@ -235,6 +235,7 @@ curl -X DELETE http://localhost:8083/connectors/system-log-sink
 
 ### 본 사이트 내 관련 문서
 
-- [1. Connect 개념](./1_concept.md)
-- [3. DB Sink 시나리오 Q&A](./3_db_sink_qna.md)
-- [5. 설계 §3](../practice/5_design.md)
+- [Connect 개념](../connect/1_concept.md)
+- [DB Sink 시나리오 Q&A](../connect/3_db_sink_qna.md)
+- [Connect 라이선스 이슈](../connect/4_license.md)
+- [5. 설계 §3](./5_design.md)

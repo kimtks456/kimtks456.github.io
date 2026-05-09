@@ -1,6 +1,6 @@
 ---
-title: "5. Connect 라이선스 이슈"
-weight: 5
+title: "4. Connect 라이선스 이슈"
+weight: 4
 date: 2026-05-10
 ---
 
@@ -130,5 +130,5 @@ Aiven JDBC Connector는 Confluent JDBC와 설정 키가 유사해 `system-log-si
 
 ### 본 사이트 내 관련 문서
 
-- [4. system-log-sink 구현 상세](./4_system_log_sink.md)
+- [7. Connect를 통한 DB 적재 (실습)](../practice/7_connect_db_sink.md)
 - [3. DB Sink 시나리오 Q&A](./3_db_sink_qna.md)
