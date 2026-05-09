@@ -42,7 +42,7 @@ Kafka Connect Worker
 {
   "name": "system-log-sink",
   "config": {
-    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "connector.class": "io.aiven.connect.jdbc.JdbcSinkConnector",
     "tasks.max": "1",
     "topics": "prd.log.system.v1",
     "connection.url": "${env:DB_URL}",
@@ -81,7 +81,7 @@ Kafka Connect Worker
 | 필드 | 값 | 설명 |
 |------|----|------|
 | `name` | `system-log-sink` | Connect 내 커넥터 고유 이름. REST API `/connectors/{name}` 으로 조회·관리 |
-| `connector.class` | `io.confluent.connect.jdbc.JdbcSinkConnector` | 사용할 커넥터 구현체. Confluent JDBC Sink |
+| `connector.class` | `io.aiven.connect.jdbc.JdbcSinkConnector` | 사용할 커넥터 구현체. Aiven JDBC Sink (Apache 2.0). [라이선스 이슈 참고](../connect/4_license.md) |
 | `tasks.max` | `1` | 병렬 처리 task 수. **1로 고정한 이유**: 여러 task 쓰면 각 task가 독립 batch 가져가므로 batch 크기가 분산됨. 로그 적재는 순서보다 batch 효율이 중요하므로 단일 task로 묶음 처리 |
 | `topics` | `prd.log.system.v1` | 이 커넥터가 소비할 Kafka 토픽. 여러 개면 콤마 구분 |
 
