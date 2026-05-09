@@ -353,48 +353,6 @@ kafka:
 
 ---
 
-## 10. 라이브러리 배포 방식 — SNAPSHOT vs Release
-
-### SNAPSHOT vs Release
-
-> Gradle/Maven 버전 관리의 핵심 구분.
-
-| | SNAPSHOT (`1.0.0-SNAPSHOT`) | Release (`1.0.0`) |
-|---|---|---|
-| 재배포 | 가능 — 같은 버전으로 계속 덮어씀 | **불가** — 동일 버전 재배포 시 Nexus 오류 |
-| 소비자 동작 | 빌드마다 Nexus 에서 최신본 재확인 | 로컬 캐시 고정 |
-| Nexus 레포 | `maven-snapshots` | `maven-releases` |
-| 용도 | 개발 중 | 버전 확정 후 배포 |
-
-```text
-개발 중:  version = '1.0.0-SNAPSHOT'
-          └── publish → maven-snapshots → 소비자가 매번 최신본 수신
-
-릴리즈:   version = '1.0.0'
-          └── publish → maven-releases → 이후 동일 버전 변경 불가
-```
-
-### Nexus 레포 구조
-
-기본 생성되는 3개 레포:
-
-| 레포 | 역할 |
-|---|---|
-| `maven-releases` | Release 버전 저장 |
-| `maven-snapshots` | SNAPSHOT 버전 저장 |
-| `maven-public` | 위 두 개 + Maven Central 묶은 **group 레포** — 소비자가 여기 하나만 바라봄 |
-
-### 라이브러리 참조 방식 — 두 가지 모드
-
-| 방식 | 설정 | 언제 |
-|---|---|---|
-| **직접 참조** | `implementation project(':kafka-common-lib')` | lib 개발 중 — 빌드 빠름, Nexus 불필요 |
-| **Nexus 참조** | `implementation 'com.example:kafka-common-lib:1.0.0-SNAPSHOT'` | 실제 소비자 입장 검증 / 릴리즈 시 |
-
-평소 개발은 직접 참조, Nexus 검증이 필요할 때만 한 줄 교체. 세팅 상세는 [6. 초기세팅](./6_init.md) 참조.
-
----
-
 ## 참고 (출처)
 
 - [apache/kafka — Docker Hub](https://hub.docker.com/r/apache/kafka)

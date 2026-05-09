@@ -283,29 +283,7 @@ public class KafkaAutoConfiguration {
 }
 ```
 
-### 2.5. SNAPSHOT vs Release — 개념
-
-> 버전 번호 뒤에 `-SNAPSHOT` 이 붙는지 여부가 전부.
-
-```text
-개발 중:   1.0.0-SNAPSHOT  →  maven-snapshots  →  같은 버전으로 계속 덮어쓸 수 있음
-릴리즈:    1.0.0           →  maven-releases   →  한번 올리면 변경 불가 (immutable)
-```
-
-| | SNAPSHOT | Release |
-|---|---|---|
-| 재배포 | 가능 | **불가** — 동일 버전 재배포 시 Nexus 오류 |
-| 소비자 동작 | Gradle 이 매번 Nexus 에서 최신본 재확인 | 로컬 캐시 고정 |
-| 강제 최신화 | `--refresh-dependencies` | 불필요 (버전 올려서 재배포) |
-| 용도 | lib 개발·반복 시 | 버전 확정 후 배포 |
-
-**실전 전환 흐름:**
-
-1. 개발 중: `version = '1.0.0-SNAPSHOT'` 유지 → publish 반복 → 소비자가 매번 최신본 수신
-2. 확정 시: `version = '1.0.0'` 으로 변경 → publish → 소비자 버전 고정
-3. 다음 개발: `version = '1.1.0-SNAPSHOT'` 으로 올려서 반복
-
-### 2.6. Nexus 배포
+### 2.5. Nexus 배포
 
 ```bash
 ./gradlew :kafka-common-lib:publish
@@ -315,7 +293,7 @@ public class KafkaAutoConfiguration {
 
 > 빌드 스킵하고 바로 배포만: `./gradlew :kafka-common-lib:publish -x test`
 
-### 2.7. order-service 에서 당겨오기
+### 2.6. order-service 에서 당겨오기
 
 `order-service/build.gradle`:
 
@@ -345,7 +323,7 @@ SNAPSHOT 최신본 강제 수신:
 
 > `maven-public` 은 group 레포 — releases + snapshots + Maven Central 을 하나로 묶음. 여기 하나만 바라보면 된다.
 
-### 2.8. order-service — dev/qa/prd 환경 분리
+### 2.7. order-service — dev/qa/prd 환경 분리
 
 Spring 프로파일 기반으로 환경을 분리한다.
 
