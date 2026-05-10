@@ -353,6 +353,78 @@ kafka:
 
 ---
 
+## 10. log-service 전환 검토 — 향후 방향성 {#10-log-service-전환-검토-향후-방향성}
+
+> **배경**: Aiven JDBC Connector가 Confluent Hub 미등록, 릴리즈 아티팩트 지연, 단일 기업 의존 등의 운영 리스크를 안고 있다.  
+> Kafka Connect 자체를 걷어내고 전용 `log-service`를 두는 방향으로의 전환을 검토한다.
+
+### 현재 구조 (Connect 방식)
+
+```
+도메인 서비스
+    │  SystemLogEvent 발행
+    ▼
+prd.log.system.v1 (Kafka 토픽)
+    │
+    ▼
+Kafka Connect (JDBC Sink)
+    │  Aiven JDBC Connector 필요
+    │  커스텀 Docker 이미지 빌드 필요
+    ▼
+PostgreSQL (system_log 테이블)
+```
+
+### 전환 후 구조 (log-service 방식)
+
+```
+도메인 서비스
+    │  SystemLogEvent 발행
+    ▼
+prd.log.system.v1 (Kafka 토픽)
+    │
+    ▼
+log-service (Spring Boot)
+    │  kafka-common-lib 사용
+    │  @KafkaListener + @IdempotentConsumer
+    │  JPA / JDBC 직접 적재
+    ▼
+PostgreSQL (system_log 테이블)
+```
+
+### 비교
+
+| 항목 | Connect 방식 | log-service 방식 |
+|------|-------------|-----------------|
+| 커넥터 라이선스 리스크 | Aiven 의존 (중간) | **없음** |
+| 커스텀 이미지 빌드 | 필요 (buildx 등 빌드 환경 관리) | **불필요** |
+| 운영 복잡도 | Connect Worker + 커넥터 + REST API | Spring Boot 단일 프로세스 |
+| 코드 제어권 | SMT로 제한적 변환만 가능 | **전면 제어** (필터·변환·재처리 로직 자유) |
+| 멱등성 처리 | Connect 내장 (offset 기반) | **@IdempotentConsumer** (기존 패턴 재사용) |
+| 테스트 용이성 | Connect 환경 통째로 필요 | Testcontainers로 단위 테스트 가능 |
+| kafka-common-lib 활용 | 불가 | **가능** — 공통 패턴 그대로 사용 |
+| 추가 인프라 | Kafka Connect Worker 컨테이너 | log-service 컨테이너 (기존 패턴과 동일) |
+
+### 전환 시 작업 범위
+
+- [ ] `log-service` Spring Boot 모듈 신규 생성
+- [ ] `kafka-common-lib` 의존성 추가 → `@KafkaListener` + `@IdempotentConsumer` 적용
+- [ ] `docker-compose.yml`에서 `kafka-connect` 서비스 제거
+- [ ] `connectors/` 디렉토리 및 Connect 설정 파일 제거
+- [ ] `system_log.ddl.sql` → log-service 초기화 스크립트로 이관
+
+### 전환 판단 기준
+
+Connect 방식을 유지하는 경우:
+- 로그 외 다수의 토픽을 여러 DB/스토리지로 적재해야 할 때 (Connect의 멀티 커넥터 이점)
+- 코드 없이 JSON 설정만으로 파이프라인을 추가해야 하는 운영 요구가 있을 때
+
+log-service로 전환하는 경우:
+- 로그 적재 대상이 단일 DB이고 파이프라인이 단순할 때
+- Aiven 커넥터 리스크가 현실화될 때 (릴리즈 중단, 호환성 문제)
+- Connect 빌드·운영 오버헤드가 서비스 복잡도 대비 과하다고 판단될 때
+
+---
+
 ## 참고 (출처)
 
 - [apache/kafka — Docker Hub](https://hub.docker.com/r/apache/kafka)

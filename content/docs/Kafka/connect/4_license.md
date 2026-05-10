@@ -136,6 +136,35 @@ Aiven JDBC Connector는 Confluent JDBC와 설정 키가 유사해 `system-log-si
 
 ---
 
+## 6. Aiven JDBC Connector 향후 리스크 분석
+
+현재 프로젝트는 Aiven JDBC Connector를 Apache 2.0 대안으로 채택했으나, 운영 관점에서 아래 리스크를 인지해야 한다.
+
+### 리스크 목록
+
+| 리스크 | 수준 | 설명 |
+|--------|------|------|
+| **단일 기업 의존** | 중 | Aiven 사가 유지보수를 중단하면 사실상 방치됨. Apache 2.0이라 포크는 가능하나 유지 부담이 생김 |
+| **Confluent Hub 미등록** | 중 | `confluent-hub install` 불가 → GitHub 릴리즈에서 직접 다운로드 필요. 버전 업데이트 자동화가 어렵고 빌드 파이프라인 관리 부담이 증가함 |
+| **릴리즈 아티팩트 지연** | 중 | 실제로 v6.12.0은 소스만 태깅되고 배포 아티팩트(ZIP/TAR)가 누락된 상태로 공개됨. 최신 버전으로 즉시 업그레이드 불가 상황 발생 가능 |
+| **공식 Docker 이미지 없음** | 중 | Connect Worker에 얹는 커스텀 이미지를 직접 빌드해야 함. `buildx` 버전 등 빌드 환경 의존성이 생기고, 이미지 빌드 파이프라인을 직접 관리해야 함 |
+| **커뮤니티 규모** | 하 | Confluent JDBC 대비 이슈 레포트·스택오버플로우 자료가 적음. 트러블슈팅 난이도 상승 가능 |
+
+### 트리거 조건 — 대안 전환 검토 시점
+
+아래 중 하나라도 발생하면 Kafka Connect 방식 자체를 재검토한다:
+
+- Aiven 리포 아카이브(보관 전용) 또는 6개월 이상 커밋 없음
+- 필요 버전 릴리즈 아티팩트가 2주 이상 누락
+- 사용 중인 Kafka 버전과 커넥터 호환성 문제 발생
+
+### 대안 방향 — log-service 전환
+
+Connect 의존성을 완전히 제거하는 방향으로 **`log-service` 마이크로서비스**를 별도 운영하는 방안이 있다.  
+자세한 내용은 [5. 설계 — log-service 전환 검토](../practice/5_design.md#10-log-service-전환-검토-향후-방향성) 참조.
+
+---
+
 ## 참고 (출처)
 
 - [Confluent Community License 원문](https://www.confluent.io/confluent-community-license/) — "Excluded Purpose" 정의 포함
