@@ -77,6 +77,48 @@ brew install colima docker docker-compose
 > `colima status` 출력에 `macOS Virtualization.Framework`가 표시되면 QEMU는 사용되지 않는다.  
 > Intel Mac이거나 `--vm-type=qemu`를 명시한 경우에만 QEMU가 필요하다.
 
+### Docker Desktop이 이미 설치된 경우 — brew 버전으로 전환
+
+Docker Desktop을 먼저 설치했다면 `docker`·`docker-compose` 바이너리가 Docker Desktop 것을 가리키고 있을 수 있다.  
+`which docker` 출력이 `/Applications/Docker.app/...` 또는 `/usr/local/bin/docker`(Docker Desktop 심볼릭 링크)이면 아래 절차로 전환한다.
+
+**① brew로 설치**
+
+```bash
+brew install colima docker docker-compose
+```
+
+**② docker-compose CLI 플러그인 교체**
+
+`docker compose` 명령은 `~/.docker/cli-plugins/docker-compose` 플러그인을 쓴다.  
+Docker Desktop이 심어 놓은 구버전 플러그인을 brew 버전으로 교체한다.
+
+```bash
+mkdir -p ~/.docker/cli-plugins
+ln -sfn /opt/homebrew/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
+```
+
+**③ 쉘 경로 캐시 초기화**
+
+쉘은 명령어 경로를 캐싱하기 때문에 `which docker-compose`가 여전히 Docker Desktop 경로를 반환할 수 있다.  
+캐시를 초기화하면 `/opt/homebrew/bin`의 brew 버전을 바라본다.
+
+```bash
+hash -r
+which docker          # → /opt/homebrew/bin/docker
+which docker-compose  # → /opt/homebrew/bin/docker-compose
+```
+
+새 터미널을 열어도 동일하게 적용된다.
+
+**④ 버전 확인**
+
+```bash
+docker --version        # Docker version 29.x.x
+docker-compose version  # Docker Compose version v5.x.x
+docker compose version  # 동일
+```
+
 ---
 
 ## 3. Colima 시작 / 정지
