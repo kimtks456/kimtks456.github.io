@@ -1,5 +1,5 @@
 ---
-title: "2. GitOps 기반 설계"
+title: "1. 설계v1 - GitOps"
 weight: 1
 date: 2026-05-04
 ---

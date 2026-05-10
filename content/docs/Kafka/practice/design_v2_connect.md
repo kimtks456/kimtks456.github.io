@@ -1,5 +1,5 @@
 ---
-title: "5. 설계"
+title: "2. 설계v2 - Connect 적용"
 weight: 2
 date: 2026-05-09
 ---
