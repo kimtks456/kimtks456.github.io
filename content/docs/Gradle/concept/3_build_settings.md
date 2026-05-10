@@ -101,71 +101,7 @@ dependencies {
 
 ---
 
-## 4. subprojects / allprojects / project 블록
-
-루트 `build.gradle.kts`에서 여러 모듈에 설정을 일괄 적용할 때 사용하는 세 가지 블록이다.
-
-| 블록 | 적용 대상 | 루트 포함 |
-|------|----------|-----------|
-| `subprojects {}` | `include()`된 모든 서브모듈 | **제외** |
-| `allprojects {}` | 루트 + 모든 서브모듈 | **포함** |
-| `project(":name") {}` | 지정한 모듈 하나 | — |
-
-### subprojects {} — 공통 설정 일괄 적용
-
-`include()`한 모든 모듈에 동일한 설정을 반복 없이 선언한다.
-
-```kotlin
-// 루트 build.gradle.kts
-subprojects {
-    apply(plugin = "java")
-    apply(plugin = "io.spring.dependency-management")
-
-    java {
-        toolchain { languageVersion = JavaLanguageVersion.of(21) }
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    // Spring BOM — 모든 모듈이 버전 명시 없이 의존성 추가 가능
-    the<DependencyManagementExtension>().apply {
-        imports { mavenBom("org.springframework.boot:spring-boot-dependencies:$springBootVersion") }
-    }
-}
-```
-
-이 블록 없이 같은 설정을 하려면 각 모듈의 `build.gradle.kts`마다 Java 툴체인, mavenCentral, BOM 임포트를 전부 반복해야 한다.
-
-### project(":name") {} — 특정 모듈 개별 설정
-
-`subprojects {}` 안에서 또는 밖에서 특정 모듈에만 설정을 추가할 때 쓴다.
-
-```kotlin
-project(":order-service") {
-    tasks.withType<Test> {
-        jvmArgs("-Xmx512m")  // order-service만 JVM 힙 제한
-    }
-}
-```
-
-### allprojects {} — 루트 포함 전체 적용
-
-저장소 설정처럼 루트 프로젝트에도 동일하게 필요한 설정에 쓴다.  
-단, 루트에는 컴파일/테스트 태스크가 없는 경우가 많아 `subprojects {}`를 쓰는 게 일반적이다.
-
-```kotlin
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
-```
-
----
-
-## 5. 멀티모듈 전체 구조 (요약)
+## 4. 멀티모듈 전체 구조 (요약)
 
 ```
 kafka-practice/               ← 루트
@@ -183,7 +119,7 @@ kafka-practice/               ← 루트
 
 ---
 
-## 6. 자주 혼동하는 포인트
+## 5. 자주 혼동하는 포인트
 
 ### `apply false`의 의미
 

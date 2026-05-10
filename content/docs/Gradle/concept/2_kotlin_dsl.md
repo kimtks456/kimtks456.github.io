@@ -1,5 +1,5 @@
 ---
-title: "1. Groovy DSL vs Kotlin DSL (.kts)"
+title: "2. Groovy DSL vs Kotlin DSL (.kts)"
 weight: 1
 date: 2026-05-10
 ---
