@@ -9,7 +9,7 @@ date: 2026-05-04
 >
 > 관련 문서:
 > - 토픽 이름의 `.v1` `.v2` 부분: [3. Topic 설계](./3_topic_design.md) §1, §3
-> - `kafka-common-lib` 의 `serde/` 위치: [5. 설계](./5_design.md) §4
+> - `kafka-common-lib` 의 `serde/` 위치: [5. 설계](../practice/design_v2_connect.md) §4
 
 ---
 
@@ -39,7 +39,7 @@ date: 2026-05-04
 | **Apicurio Registry** | Apache 2.0 (OSS) | Avro · Protobuf · JSON Schema · OpenAPI · AsyncAPI | Strimzi 등 OSS 스택과 잘 맞음 |
 | **Karapace** | Apache 2.0 (OSS) | Avro · Protobuf · JSON Schema | Aiven 발. Confluent SR 와 API 호환 |
 
-→ §1 의 [실행 환경 결정](./2_gitops_design.md) 과 묶여 결정됨:
+→ §1 의 [실행 환경 결정](../practice/design_v1_gitops.md) 과 묶여 결정됨:
 - CfK 환경 → Confluent Schema Registry
 - Strimzi/OSS 환경 → Apicurio 또는 Karapace
 - *(미정)*
@@ -84,10 +84,10 @@ Schema Registry 가 표준화한 호환성 모드:
 | 항목 | 결정 |
 |---|---|
 | 직렬화 포맷 | **(미정)** — Avro 후보 우세, 환경 결정 후 확정 |
-| Schema Registry | **(미정)** — [2. GitOps 기반 설계 §4 실행 환경](./2_gitops_design.md) 결정 후 자동 결정됨 |
+| Schema Registry | **(미정)** — [2. GitOps 기반 설계 §4 실행 환경](../practice/design_v1_gitops.md) 결정 후 자동 결정됨 |
 | 호환성 모드 (default) | **(미정)** — `BACKWARD` 후보 |
 | 토픽 버전 vs schema 버전 분리 정책 | §4 채택 (toplevel breaking 만 토픽 v 갱신) |
-| `kafka-common-lib` 의 default Serde | 직렬화 포맷 결정 후 — [5. 설계 §4](./5_design.md) `serde/` |
+| `kafka-common-lib` 의 default Serde | 직렬화 포맷 결정 후 — [5. 설계 §4](../practice/design_v2_connect.md) `serde/` |
 
 ---
 

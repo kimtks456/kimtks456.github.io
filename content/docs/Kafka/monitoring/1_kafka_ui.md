@@ -1,6 +1,6 @@
 ---
 title: "8. Kafka UI — 토픽·메시지·모니터링"
-weight: 8
+weight: 1
 date: 2026-05-10
 ---
 

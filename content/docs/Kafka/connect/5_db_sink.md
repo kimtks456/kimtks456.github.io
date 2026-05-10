@@ -1,6 +1,6 @@
 ---
 title: "7. Connect를 통한 DB 적재"
-weight: 7
+weight: 5
 date: 2026-05-10
 ---
 
@@ -238,4 +238,4 @@ curl -X DELETE http://localhost:8083/connectors/system-log-sink
 - [Connect 개념](../connect/1_concept.md)
 - [DB Sink 시나리오 Q&A](../connect/3_db_sink_qna.md)
 - [Connect 라이선스 이슈](../connect/4_license.md)
-- [5. 설계 §3](./5_design.md)
+- [5. 설계 §3](../practice/design_v2_connect.md)

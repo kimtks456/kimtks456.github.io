@@ -1,12 +1,12 @@
 ---
 title: "5. 설계"
-weight: 5
+weight: 2
 date: 2026-05-09
 ---
 
 > SI 환경 공통 플랫폼. 운영 환경은 단순 배포 (GitOps/K8s 생략).
 > 공통팀이 브로커 설정과 공통 라이브러리를 통제하고, 도메인 개발자는 가져다 쓰는 구조.
-> 토픽 네이밍은 [3. Topic 설계](./3_topic_design.md), 메시지 포맷은 [4. Message Format 설계](./4_message_format.md) 참조.
+> 토픽 네이밍은 [3. Topic 설계](../concept/3_topic_design.md), 메시지 포맷은 [4. Message Format 설계](../concept/4_message_format.md) 참조.
 
 ---
 
@@ -200,7 +200,7 @@ kafka-common-lib/
 ## 5. `/events` — 이벤트 POJO 설계
 
 > JSON schema 는 코드 자체가 스키마. Schema Registry 없이 Jackson 직렬화.
-> JVM 환경 전제 (non-JVM 서비스가 있다면 [4. Message Format 설계](./4_message_format.md) 에서 재검토 필요).
+> JVM 환경 전제 (non-JVM 서비스가 있다면 [4. Message Format 설계](../concept/4_message_format.md) 에서 재검토 필요).
 
 ### 비즈니스 이벤트 예시 (`OrderCreatedEvent.java`)
 
@@ -436,8 +436,7 @@ log-service로 전환하는 경우:
 
 ### 본 사이트 내 관련 문서
 
-- [3. Topic 설계](./3_topic_design.md)
-- [4. Message Format 설계](./4_message_format.md)
-- [6. 초기세팅](./6_init.md)
+- [3. Topic 설계](../concept/3_topic_design.md)
+- [4. Message Format 설계](../concept/4_message_format.md)
 - [Kafka Connect — 개념](../connect/1_concept.md)
 - [Kafka Connect — DB Sink Q&A](../connect/3_db_sink_qna.md)

@@ -1,6 +1,6 @@
 ---
 title: "9. log-service 설계 — Kafka Connect 대체"
-weight: 9
+weight: 3
 date: 2026-05-10
 ---
 
