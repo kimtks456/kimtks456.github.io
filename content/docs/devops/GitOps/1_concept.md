@@ -185,4 +185,4 @@ spec:
 ### 본 사이트 내 관련 문서
 
 - [DevOps/ArgoCD/1. ArgoCD 개념](../ArgoCD/1_concept.md) — Pull 모델의 구체 구현체
-- [Kafka/실습/2. GitOps 기반 설계](../../Kafka/practice/2_gitops_design.md) — GitOps 를 Kafka 자원 관리에 적용
+- [Kafka/실습/1. 설계v1 - GitOps](../../kafka/practice/design_v1_gitops.md) — GitOps 를 Kafka 자원 관리에 적용
