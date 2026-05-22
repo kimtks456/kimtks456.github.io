@@ -302,6 +302,6 @@ Topic에는 과거 schema로 작성된 이벤트가 남아 있다.
 
 ## 참고
 
-- Designing Data-Intensive Applications - Martin Kleppmann
-- Apache Avro Documentation
-- Confluent Schema Registry Documentation
+- [도서] Designing Data-Intensive Applications - Martin Kleppmann
+- [Apache Avro Documentation](https://avro.apache.org/docs/)
+- [Confluent Schema Registry Documentation](https://docs.confluent.io/platform/current/schema-registry/index.html)
