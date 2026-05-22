@@ -10,7 +10,7 @@ date: 2026-05-04
 >
 > 관련 문서:
 > - [3. Topic 설계](../concept/3_topic_design.md)
-> - [4. Message Format 설계](../concept/4_message_format.md)
+> - [5. Message Format 설계](../concept/5_message_format.md)
 > - [5. 설계](./design_v2_connect.md)
 
 ---
@@ -147,8 +147,8 @@ date: 2026-05-04
 | 항목 | 옵션 | 결정 시점 | 관련 문서 |
 |---|---|---|---|
 | 실행 환경 | Strimzi (OSS) / CfK / Confluent Cloud / 자체 운영 | 사전 결정 필요 | 본 문서 §4 |
-| Schema Registry | Confluent Schema Registry / Apicurio / Karapace | 환경 결정 후 | [4. Message Format 설계](../concept/4_message_format.md) |
-| 직렬화 포맷 | Avro / Protobuf / JSON Schema | 도메인 요구사항 검토 후 | [4. Message Format 설계](../concept/4_message_format.md) |
+| Schema Registry | Confluent Schema Registry / Apicurio / Karapace | 환경 결정 후 | [5. Message Format 설계](../concept/5_message_format.md) |
+| 직렬화 포맷 | Avro / Protobuf / JSON Schema | 도메인 요구사항 검토 후 | [5. Message Format 설계](../concept/5_message_format.md) |
 | 인증/인가 | mTLS / SASL/OAuth / SCRAM | 보안팀 협의 | (별도 문서 *(미정)*) |
 | Connect 사용 여부 | 사용 / 미사용 | CDC/싱크 요구사항 | [Kafka/Connect](../../Kafka/connect/1_concept.md) — 사용 결정 |
 | 멀티 클러스터 / DR | MirrorMaker 2 / Cluster Linking | 가용성 SLA 정의 후 | (별도 문서 *(미정)*) |

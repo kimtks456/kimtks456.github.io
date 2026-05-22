@@ -1,6 +1,6 @@
 ---
-title: "4. Message Format 설계"
-weight: 4
+title: "5. Message Format 설계"
+weight: 5
 date: 2026-05-04
 ---
 

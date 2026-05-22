@@ -47,28 +47,61 @@ Kafka는 왜 At-least-once 인가?
   - 별도로 offset commit하기에 독립 보장됨. 따라서 목적(ex. 알림, 트랜잭션)에 따라 독립적으로 소비 가능
 
 ### 1.5. 고성능인 이유
-1. __page cache__
-    - disk 말고 memory에만 올려놓고 성공처리 후 다음 작업 진행 
-2. __Zero Copy__ (전송 최적화)
+1. __Append-only log와 순차 I/O__
+    - Kafka partition은 append-only log 구조라 메시지를 파일 끝에 계속 붙인다.
+    - 기존 데이터를 찾아가 수정하지 않으므로 random seek가 적다.
+    - HDD에서도 순차 읽기/쓰기는 random I/O보다 훨씬 빠르다.
+    - 이 구조 덕분에 디스크 기반 저장소인데도 높은 throughput을 낼 수 있다.
+2. __page cache__
+    - 매 write마다 disk fsync를 기다리지 않고 OS page cache에 쓴 뒤 다음 작업 진행
+    - disk flush는 OS 또는 Kafka flush 정책에 따라 별도로 수행
+3. __Zero Copy__ (전송 최적화)
     - 일반적인 전송 : Disk -> kernel memory -> user memory -> socket buffer -> NIC. 4번 복사 발생하며 CPU 점유
       - On-Heap(JVM memory) 사용하기에, Off-Heap(OS memory)로 복사하는 비용이 들게됨.
     - Kafka 전송 : linux sendfile() 시스템콜 = disk -> kernel memory -> NIC. 복사 2번
-3. __브로커의 단순함__
+4. __브로커의 단순함__
     - 기존 MQ : 브로커가 message 누가 읽었나 확인(Ack), 읽은건 지우고 필터링하는 기능 존재
     - Kafka : 어디까지 읽었는지, 필터링 등 consumer가 직접 관리. broker 부담이 줄어드니 수만 대의 consumer 붙어도 고성능 가능
-4. __배치 처리__
+5. __배치 처리__
    - network 비용 아끼기 위해 일정시간 모아두다 한번에 producer -> broker 전송. consumer도 수백개씩 consume.
 
 > **Page Cache**
 >
 > OS가 disk에서 읽어온 데이터나, 곧 disk 보낼 데이터를 memory 남는 공간에 잠시 보관하는 공간
 > - 일반적인 쓰기 : App -> Page Cache -> Disk
-> - Kafka 쓰기 : App -> Page Cache 기록되면 성공 처리
-    >   - Disk 옮기는건 OS가 Background로 진행
->   - 순차적 I/O(append-only)로 파일 끝에 write하므로 disk 쓰기 최적
+> - Kafka 쓰기 : Broker가 log segment 파일에 append하면 우선 OS page cache에 반영됨
+>   - 이때 partition offset이 할당됨
+>   - producer ack는 `acks` 설정과 replication 완료 여부에 따라 반환됨
+>   - 기본적으로 매 메시지마다 fsync하지 않음
+>   - disk flush는 OS가 background로 수행하거나, Kafka의 `log.flush.interval.messages`, `log.flush.interval.ms` 설정에 따라 강제될 수 있음
+>   - append-only 구조라 파일 끝에 순차적으로 write하므로 disk 쓰기에 유리
+>
+> 즉, "offset 증가 = 즉시 물리 disk 기록 완료"는 아니다.
+> Kafka는 매번 disk flush를 기다리는 대신 page cache와 replication으로 처리량과 내구성을 맞춘다.
+
+> **Note: 다른 Message Queue와의 차이**
+>
+> 모든 Message Queue가 Kafka처럼 **append-only log를 중심 모델**로 쓰는 것은 아니다.
+>
+> 전통적인 queue는 보통 "메시지를 전달하고, consumer가 ack하면 제거"하는 모델이다.
+> 구현 내부에서 로그나 파일 append를 쓰더라도, 사용자에게 노출되는 개념은 queue의 head에서 꺼내고 ack 후 삭제하는 구조에 가깝다.
+>
+> Kafka는 다르다.
+>
+> ```text
+> message append → offset 부여 → topic에 보관
+> consumer는 자기 offset만 이동
+> 메시지는 consumer가 읽었다고 즉시 삭제되지 않음
+> ```
+>
+> 그래서 Kafka에서는 broker가 consumer별 ack 상태를 일일이 기준으로 메시지를 제거하지 않는다.
+> 각 consumer group은 자기 offset을 관리하고, Kafka는 retention 정책에 따라 나중에 segment를 삭제한다.
+>
+> 이 차이 때문에 Kafka는 같은 topic을 여러 consumer group이 독립적으로 읽거나,
+> 과거 offset부터 replay하는 구조에 강하다.
 
 
-### 1.5. 고가용성인 이유
+### 1.6. 고가용성인 이유
 1. replication 
    - __Leader__ : 모든 r/w 요청 처리하는 'leader' 파티션 
    - **Follower** : leader 데이터를 복사해둔 복제본.  
@@ -168,7 +201,8 @@ Producer는 2개의 thread로 동작.
 >   - ISR=1 : 1 < 2이므로 쓰기 불가.
 
 
-### 2.4. Idempotence(멱등성)과 순서 보장(EOS 기반)
+### 2.4. Producer Idempotence와 retry 시 partition 내 순서 보장
+
 Network time-out 등으로 producer의 retry 시, 중복된 순서 뒤바뀜 해결하는 매커니즘 의미
 - 원리
   - `enable.idempotence=true` 설정하면, producer마다 Producer ID 부여됨.
@@ -194,6 +228,23 @@ Network time-out 등으로 producer의 retry 시, 중복된 순서 뒤바뀜 해
     - 1이면 꼬일수가 없음.
   - 멱등성 키면 이 값을 5 이하로 설정해도 순서 보장됨.
   - broker가 sequenceNumber 기반으로 순서 어긋난 패킷을 memory buffer에서 재조립한 후 disk에 씀.
+
+> **Note: Kafka의 기본 순서 보장**
+>
+> Kafka의 순서 보장은 topic 전체가 아니라 **partition 내부** 기준이다.
+> 같은 partition에 저장된 메시지는 offset 순서대로 읽힌다.
+>
+> 따라서 같은 업무 단위의 이벤트 순서를 지키려면 같은 key를 사용해서 같은 partition으로 보내야 한다.
+>
+> ```text
+> key=order-1 → partition-2
+>   offset 10: OrderCreated
+>   offset 11: OrderPaid
+>   offset 12: OrderShipped
+> ```
+>
+> key는 "같은 partition으로 보내기 위한 장치"이고,
+> idempotence는 "같은 partition 안에서 retry 중 중복/순서 뒤집힘을 막기 위한 장치"다.
 
 ### 2.5. 주요 파라미터 정리
 | **카테고리**               | **파라미터명** | **타입** | **기본값** | **엔지니어링 튜닝 포인트** |
