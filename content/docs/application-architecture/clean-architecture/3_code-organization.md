@@ -201,12 +201,14 @@ buckpal
     ├── application
     │   ├── port
     │   │   ├── in
-    │   │   │   └── SendMoneyUseCase
+    │   │   │   ├── SendMoneyUseCase
+    │   │   │   └── GetAccountBalanceQuery
     │   │   └── out
     │   │       ├── LoadAccountPort
     │   │       └── UpdateAccountStatePort
     │   └── service
-    │       └── SendMoneyService
+    │       ├── SendMoneyService
+    │       └── GetAccountBalanceService
     └── domain
         ├── Account
         ├── Activity
