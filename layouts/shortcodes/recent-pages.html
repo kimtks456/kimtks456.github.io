@@ -1,0 +1,69 @@
+<style>
+.rp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.rp-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--gray-200, #e0e0e0);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.rp-card:hover {
+  background: var(--gray-100, #f6f6f6);
+  border-color: var(--gray-500, #aaa);
+  text-decoration: none;
+}
+.rp-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.rp-breadcrumb {
+  font-size: 0.72rem;
+  color: var(--gray-500, #888);
+  letter-spacing: 0.01em;
+}
+.rp-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rp-date {
+  font-size: 0.78rem;
+  color: var(--gray-500, #888);
+  white-space: nowrap;
+  margin-left: 1.5rem;
+  flex-shrink: 0;
+}
+</style>
+
+<div class="rp-list">
+{{ range first 5 (.Site.RegularPages.ByLastmod.Reverse) }}
+  {{ $p := .Parent }}
+  {{ $pp := .Parent.Parent }}
+  {{ $breadcrumb := "" }}
+  {{ if and $pp (ne $pp.Kind "home") }}
+    {{ $breadcrumb = printf "%s > %s" $pp.Title $p.Title }}
+  {{ else if $p }}
+    {{ $breadcrumb = $p.Title }}
+  {{ end }}
+  <a class="rp-card" href="{{ .RelPermalink }}">
+    <div class="rp-left">
+      <span class="rp-breadcrumb">{{ $breadcrumb }}</span>
+      <span class="rp-title">{{ .Title }}</span>
+    </div>
+    <span class="rp-date">{{ .Lastmod.Format "2006-01-02 15:04" }}</span>
+  </a>
+{{ end }}
+</div>
