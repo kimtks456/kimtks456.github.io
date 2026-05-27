@@ -4,17 +4,6 @@ weight: 4
 date: 2026-05-26
 ---
 
-> **Note: Rich(풍부한) Domain Model vs Anemic(빈약한) Domain Model**
->
-> **Rich Domain Model**은 도메인 객체가 상태와 행위를 함께 가진다.
-> 예를 들어 `Account`가 잔고 계산, 출금 가능 여부 확인, 출금/입금 활동 등록 같은 비즈니스 행위를 직접 수행한다.
->
-> **Anemic Domain Model**은 도메인 객체가 상태만 가지고, 대부분의 비즈니스 로직은 service에 있다.
-> 객체는 getter/setter 중심의 데이터 컨테이너가 되고, service가 절차적으로 상태를 조작한다.
->
-> Clean/Hexagonal Architecture가 항상 rich model을 강제하는 것은 아니다.
-> 다만 도메인 규칙이 중요한 시스템에서는 rich model이 비즈니스 규칙을 도메인 안에 모으기 쉽다.
-
 ## 1. 도메인 모델 구현하기
 
 계좌 송금 유스케이스를 객체지향적으로 모델링하면 단순하다.
@@ -359,7 +348,214 @@ CRUD 중심이면 같은 모델을 공유하는 전략도 가능하고,
 
 ---
 
-## 6. 참고
+## 6. 비즈니스 규칙 검증하기
+
+입력 유효성 검증과 비즈니스 규칙 검증은 다르다.
+
+| 구분 | 의미 | 예시 |
+|---|---|---|
+| 입력 유효성 검증 | 구문상의(syntactical) 검증 | 금액이 null이면 안 됨, 금액은 0보다 커야 함 |
+| 비즈니스 규칙 검증 | 유스케이스 맥락 속 의미적인(semantical) 검증 | 출금 계좌는 초과 출금되면 안 됨 |
+
+비즈니스 규칙은 가능하면 도메인 엔티티 안에 둔다.
+도메인 엔티티가 자기 상태와 규칙을 가장 잘 알고 있기 때문이다.
+
+```java
+class Account {
+
+    // ...
+
+    public boolean withdraw(Money money, AccountId targetAccountId) {
+        if (!mayWithdraw(money)) {
+            return false;
+        }
+
+        Activity withdrawal = new Activity(
+                this.id,
+                this.id,
+                targetAccountId,
+                LocalDateTime.now(),
+                money
+        );
+
+        activityWindow.addActivity(withdrawal);
+        return true;
+    }
+
+    // ...
+}
+```
+
+도메인 엔티티 안에서 검증하기 여의치 않다면,
+유스케이스 코드에서 도메인 엔티티를 사용하기 전에 검증할 수 있다.
+
+```java
+class SendMoneyService implements SendMoneyUseCase {
+
+    // ...
+
+    public boolean sendMoney(SendMoneyCommand command) {
+        requireAccountExists(command.sourceAccountId());
+        requireAccountExists(command.targetAccountId());
+        requireWithdrawalThreshold(command.money());
+
+        // ...
+    }
+
+    // ...
+}
+```
+
+비즈니스 규칙 위반은 전용 예외로 표현하는 편이 좋다.
+그래야 통신 adapter가 해당 예외를 적절한 에러 메시지나 HTTP status로 변환할 수 있다.
+
+```java
+class BusinessRuleViolationException extends RuntimeException {
+    BusinessRuleViolationException(String message) {
+        super(message);
+    }
+}
+```
+
+---
+
+## 7. 풍부한 도메인 모델 vs 빈약한 도메인 모델
+
+이 책은 도메인 모델 구현 방식에 대해 열려 있다.
+하나의 정답을 강제하지 않는다.
+자유도가 있다는 점에서는 장점이지만, 명확한 지침이 없다는 점에서는 어려움이기도 하다.
+
+풍부한(rich) 도메인 모델은 entity 안에 가능한 많은 도메인 로직을 둔다.
+entity는 상태 변경 메서드를 제공하고, 비즈니스 규칙에 맞는 유효한 변경만 허용한다.
+
+```text
+Account.withdraw()
+Account.deposit()
+Account.calculateBalance()
+```
+
+이 경우 유스케이스는 도메인 모델의 진입점처럼 동작한다.
+사용자의 의도를 표현하고, 도메인 entity의 메서드 호출로 변환한다.
+
+```text
+입금 계좌 로드
+출금 계좌 로드
+sourceAccount.withdraw()
+targetAccount.deposit()
+변경 상태 저장
+```
+
+빈약한(anemic) 도메인 모델은 entity가 얇다.
+대부분 getter/setter만 가지고, 도메인 로직은 유스케이스 service에 있다.
+
+```text
+Account
+  → 상태만 보유
+
+SendMoneyService
+  → 잔고 확인
+  → 출금 처리
+  → 입금 처리
+```
+
+어떤 스타일을 선택할지는 프로젝트 성격에 따라 다르다.
+도메인 규칙이 복잡하다면 rich model이 유리하고,
+단순 CRUD 중심이라면 anemic model도 실용적일 수 있다.
+
+---
+
+## 8. 유스케이스마다 다른 출력 모델
+
+입력 모델과 마찬가지로 출력 모델도 유스케이스에 맞게 구체적일수록 좋다.
+출력 모델은 호출자에게 꼭 필요한 데이터만 가져야 한다.
+
+```text
+SendMoneyResult
+  → transactionId
+  → sourceAccountBalance
+  → targetAccountBalance
+```
+
+`Account` 전체를 그대로 반환하면 호출자에게 필요 없는 데이터까지 노출될 수 있다.
+또 다른 유스케이스와 같은 출력 모델을 공유하면 유스케이스들이 같은 모델에 강하게 결합된다.
+
+```text
+SendMoneyUseCase
+GetAccountBalanceQuery
+UpdateAccountUseCase
+  → AccountResponse 공유
+  → 한 유스케이스의 출력 요구가 다른 유스케이스에 영향
+```
+
+SRP를 적용해 출력 모델을 유스케이스별로 분리하면 결합을 줄일 수 있다.
+
+```text
+SendMoneyResult
+GetAccountBalanceResult
+UpdateAccountResult
+```
+
+엔티티를 입력/출력 모델로 사용하는 문제는 [11. 의식적으로 지름길 사용하기](./11_taking-shortcuts-consciously/)에서 다시 다룬다.
+
+---
+
+## 9. 읽기 전용 유스케이스는 어떨까
+
+계좌 잔고 보여주기는 application core 관점에서 간단한 데이터 조회다.
+복잡한 비즈니스 규칙을 수행하지 않는다면, 쓰기 유스케이스와 분리해 query로 구현할 수 있다.
+
+패키지 구조는 `3. 코드 구성하기`에서 본 것처럼 incoming port와 query service를 둘 수 있다.
+
+```text
+account.application.port.in.GetAccountBalanceQuery
+account.application.service.GetAccountBalanceService
+```
+
+`GetAccountBalanceService`는 incoming query port를 구현하고,
+outgoing port에 조회를 위임한다.
+
+```java
+class GetAccountBalanceService implements GetAccountBalanceQuery {
+
+    private final LoadAccountPort loadAccountPort;
+
+    @Override
+    public Money getAccountBalance(AccountId accountId) {
+        return loadAccountPort.loadAccount(accountId).calculateBalance();
+    }
+}
+```
+
+이런 읽기 전용 쿼리는 쓰기 가능한 유스케이스와 코드 상에서 명확히 구분된다.
+따라서 CQS(Command Query Separation)나 CQRS(Command Query Responsibility Segregation) 같은 개념과 잘 맞는다.
+
+서비스가 outgoing port로 쿼리를 전달하는 것 외에 별다른 역할이 없다면,
+client가 outgoing port를 직접 호출하는 구조도 가능하다.
+이 지름길은 [11. 의식적으로 지름길 사용하기](./11_taking-shortcuts-consciously/)에서 다시 논의한다.
+
+---
+
+## 10. 유지보수 가능한 소프트웨어를 만드는 데 어떻게 도움이 될까
+
+이 장의 구조는 도메인 로직을 자유롭게 구성할 수 있게 한다.
+대신 유스케이스마다 별도 입출력 모델을 만들고, 모델과 entity를 매핑하는 공수가 든다.
+
+이 비용을 지불하면 원치 않는 부수효과를 줄일 수 있다.
+
+유스케이스별 모델이 있으면 다음 장점이 있다.
+
+| 장점 | 설명 |
+|---|---|
+| 유스케이스 이해가 쉬움 | 입력/출력 모델만 봐도 유스케이스 계약을 알 수 있음 |
+| 유지보수가 쉬움 | 한 유스케이스의 변경이 다른 유스케이스 모델에 덜 전파됨 |
+| 동시 작업이 쉬움 | 여러 개발자가 서로 다른 유스케이스를 독립적으로 작업 가능 |
+| 검증이 명확함 | 입력 유효성 검증과 출력 모델이 유스케이스별로 분리됨 |
+
+꼼꼼한 입력 유효성 검증과 입출력 모델 분리는 지속 가능한 코드를 만드는 데 도움이 된다.
+
+---
+
+## 11. 참고
 
 - [도서] 만들면서 배우는 클린 아키텍처 - 톰 홈버그(Tom Hombergs)
 - [Bean Validation specification](https://beanvalidation.org/)
