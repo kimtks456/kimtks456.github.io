@@ -1,0 +1,81 @@
+<script>
+(() => {
+  const toc = document.querySelector(".book-toc .book-toc-content");
+  const article = document.querySelector(".book-article");
+
+  if (!toc || !article) {
+    return;
+  }
+
+  const tocLinks = Array.from(toc.querySelectorAll('a[href^="#"]'));
+  if (tocLinks.length === 0) {
+    return;
+  }
+
+  const linkById = new Map();
+  for (const link of tocLinks) {
+    const id = decodeURIComponent(link.hash.slice(1));
+    if (id) {
+      linkById.set(id, link);
+    }
+  }
+
+  const headings = Array.from(article.querySelectorAll("h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]"))
+    .filter((heading) => linkById.has(heading.id));
+
+  if (headings.length === 0) {
+    return;
+  }
+
+  const clearActive = () => {
+    for (const link of tocLinks) {
+      link.classList.remove("active");
+      link.removeAttribute("aria-current");
+    }
+  };
+
+  const setActive = (id) => {
+    const activeLink = linkById.get(id);
+    if (!activeLink || activeLink.classList.contains("active")) {
+      return;
+    }
+
+    clearActive();
+    activeLink.classList.add("active");
+    activeLink.setAttribute("aria-current", "location");
+  };
+
+  const updateActive = () => {
+    const offset = window.innerHeight / 3;
+    let current = headings[0];
+
+    for (const heading of headings) {
+      if (heading.getBoundingClientRect().top <= offset) {
+        current = heading;
+      } else {
+        break;
+      }
+    }
+
+    setActive(current.id);
+  };
+
+  let ticking = false;
+  const requestUpdate = () => {
+    if (ticking) {
+      return;
+    }
+
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      updateActive();
+      ticking = false;
+    });
+  };
+
+  updateActive();
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", requestUpdate);
+  window.addEventListener("hashchange", requestUpdate);
+})();
+</script>
