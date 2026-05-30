@@ -98,9 +98,9 @@ persistence
 flowchart LR
     C["AccountController<br/>account.adapter.in.web"]
     WM["Web Model<br/>account.adapter.in.web"]
-    UC["<<Interface>><br/>SendMoneyUseCase<br/>account.application.port.in"]
+    UC["&lt;&lt;Interface&gt;&gt;<br/>SendMoneyUseCase<br/>account.application.port.in"]
     S["SendMoneyService<br/>account.application.service"]
-    PORT["<<Interface>><br/>UpdateAccountStatePort<br/>account.application.port.out"]
+    PORT["&lt;&lt;Interface&gt;&gt;<br/>UpdateAccountStatePort<br/>account.application.port.out"]
     A["AccountPersistenceAdapter<br/>account.adapter.out.persistence"]
     PM["Persistence Model<br/>account.adapter.out.persistence"]
     ACCOUNT["Account<br/>account.domain"]
@@ -325,7 +325,7 @@ AccountPersistenceAdapter
 
 ```mermaid
 flowchart TB
-    STATE["<<Interface>><br/>AccountState"]
+    STATE["&lt;&lt;Interface&gt;&gt;<br/>AccountState"]
 
     WEB["Web Model<br/>account.adapter.in.web"]
     UC["SendMoneyUseCase<br/>account.application.port.in"]
