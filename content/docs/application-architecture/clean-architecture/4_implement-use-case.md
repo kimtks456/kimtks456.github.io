@@ -117,25 +117,22 @@ public class Account {
 비즈니스 규칙 검증은 유스케이스와 도메인 엔티티가 함께 책임진다.
 예를 들어 "잔고가 부족하면 출금할 수 없다"는 규칙은 `Account.withdraw()` 안에 둘 수 있다.
 
-```mermaid
-flowchart LR
-    C["SendMoneyCommand"]
-    S["SendMoneyService"]
-    LA["LoadAccountPort"]
-    UA["UpdateAccountStatePort"]
-    A1["Source Account"]
-    A2["Target Account"]
+```text
+account.application.port.in          account.application.service          account.domain                 account.application.port.out
+───────────────────────────          ───────────────────────────          ──────────────                 ───────────────────────────
 
-    C --> S
-    S --> LA
-    LA --> A1
-    LA --> A2
-    S --> A1
-    S --> A2
-    S --> UA
+<<Interface>>
+SendMoneyUseCase ◀──────────────────┐
+                                    │
+SendMoneyCommand ───────────────────┼──▶ SendMoneyService ──────────────▶ Account
+                                    │          │
+                                    │          └────────────────────────────────────────────────────────▶ <<Interface>>
+                                    │                                                                    UpdateAccountStatePort
+                                    │
+                                    └── implements
 ```
 
-`SendMoneyService`는 incoming port의 구현체다.
+`SendMoneyUseCase`는 incoming port interface이고, `SendMoneyService`는 이를 구현하는 application service다.
 그리고 outgoing port를 통해 계좌를 불러오고 변경 상태를 저장한다.
 
 ```java

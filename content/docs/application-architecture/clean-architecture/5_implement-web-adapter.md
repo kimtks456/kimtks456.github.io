@@ -19,12 +19,11 @@ Hexagonal Architecture 관점에서 웹 어댑터는 **주도하는(driving) 어
 제어 흐름은 보통 왼쪽에서 오른쪽으로 흐른다.
 웹 어댑터가 요청을 받고, application service를 호출한다.
 
-```mermaid
-flowchart LR
-    C["AccountController<br/>account.adapter.in.web"]
-    S["SendMoneyService<br/>account.application.service"]
+```text
+account.adapter.in.web          account.application.service
+──────────────────────          ───────────────────────────
 
-    C --> S
+AccountController ────────────▶ SendMoneyService
 ```
 
 이 구조는 단순하다.
@@ -42,18 +41,14 @@ flowchart LR
 
 의존성 역전 원칙을 적용하면 웹 어댑터와 유스케이스 사이에 incoming port가 생긴다.
 
-```mermaid
-flowchart LR
-    C["AccountController<br/>account.adapter.in.web"]
-    IP["&lt;&lt;Interface&gt;&gt;<br/>SendMoneyUseCase<br/>account.application.port.in"]
-    S["SendMoneyService<br/>account.application.service"]
-    OP["&lt;&lt;Interface&gt;&gt;<br/>UpdateAccountStatePort<br/>account.application.port.out"]
-    A["AccountPersistenceAdapter<br/>account.adapter.out.persistence"]
+```text
+account.adapter.in.web          account.application.port.in          account.application.service          account.application.port.out          account.adapter.out.persistence
+──────────────────────          ───────────────────────────          ───────────────────────────          ───────────────────────────          ───────────────────────────────
 
-    C --> IP
-    S -- implements --> IP
-    S --> OP
-    A -- implements --> OP
+AccountController ────────────▶ <<Interface>>
+                                SendMoneyUseCase ◀───────────────── SendMoneyService ─────────────────▶ <<Interface>>
+                                                                    implements                         UpdateAccountStatePort ◀──────────── AccountPersistenceAdapter
+                                                                                                                                            implements
 ```
 
 웹 어댑터는 `SendMoneyService` 구현체가 아니라 `SendMoneyUseCase` port를 호출한다.
@@ -78,16 +73,13 @@ port는 애플리케이션 코어가 외부와 통신하는 명세다.
 이 경우 application core가 웹 쪽으로 메시지를 보내야 하므로 outgoing port가 필요하다.
 outgoing port는 application 계층에 있고, 웹 어댑터가 이를 구현한다.
 
-```mermaid
-flowchart LR
-    S["SendNotificationService<br/>account.application.service"]
-    OP["&lt;&lt;Interface&gt;&gt;<br/>ClientNotificationPort<br/>account.application.port.out"]
-    WS["WebSocketController<br/>account.adapter.in.web"]
-    CLIENT["Client"]
+```text
+account.application.service          account.application.port.out          account.adapter.in.web          client
+───────────────────────────          ───────────────────────────          ──────────────────────          ──────
 
-    S --> OP
-    WS -- implements --> OP
-    WS --> CLIENT
+SendNotificationService ───────────▶ <<Interface>>
+                                    ClientNotificationPort ◀──────────── WebSocketController ───────────▶ Client
+                                                                        implements
 ```
 
 이 구조에서는 하나의 웹 어댑터가 두 역할을 할 수 있다.

@@ -373,26 +373,17 @@ class SendMoneyService {
 따라서 중립적인 조립자가 필요하다.
 Spring 같은 DI container가 이 역할을 한다.
 
-```mermaid
-flowchart LR
-    C["AccountController<br/>adapter.in.web"]
-    IP["SendMoneyUseCase<br/>application.port.in"]
-    S["SendMoneyService<br/>application.service"]
-    OP["LoadAccountPort<br/>application.port.out"]
-    A["AccountPersistenceAdapter<br/>adapter.out.persistence"]
-    R["SpringDataAccountRepository"]
-    DB["Database"]
-    DI["Spring DI Container<br/>configuration"]
+```text
+adapter.in.web              application.port.in          application.service          application.port.out          adapter.out.persistence
+──────────────              ───────────────────          ───────────────────          ────────────────────          ───────────────────────
 
-    C --> IP
-    IP --> S
-    S --> OP
-    A --> OP
-    A --> R
-    R --> DB
-    DI -. inject .-> C
-    DI -. inject .-> S
-    DI -. inject .-> A
+AccountController ────────▶ SendMoneyUseCase ◀────────── SendMoneyService ─────────▶ LoadAccountPort ◀──────────── AccountPersistenceAdapter ───▶ SpringDataAccountRepository ───▶ Database
+                                                     implements                                                   implements
+
+Spring DI Container
+  ├─ injects AccountController
+  ├─ injects SendMoneyService
+  └─ injects AccountPersistenceAdapter
 ```
 
 호출 흐름은 다음과 같다.
